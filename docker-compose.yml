@@ -1,0 +1,67 @@
+version: '3.8'
+
+services:
+  # API Gateway
+  api-gateway:
+    build: ./api-gateway
+    ports:
+      - "8000:8000"
+    environment:
+      - ENVIRONMENT=development
+    depends_on:
+      - users-service
+    volumes:
+      - ./api-gateway:/app
+
+  # Database
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_MULTIPLE_DATABASES: users_db,posts_db,comments_db,analytics_db
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-multiple-databases.sh:/docker-entrypoint-initdb.d/init-multiple-databases.sh
+
+  # Kafka
+  kafka:
+    image: confluentinc/cp-kafka:latest
+    ports:
+      - "9092:9092"  # для доступа с хоста
+      - "29093:29093" # для контроллера KRaft
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_NODE_ID: 1
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:29093
+      
+      # Конфигурация слушателей:
+      KAFKA_LISTENERS: PLAINTEXT_INTERNAL://:9092,CONTROLLER://:29093,PLAINTEXT_HOST://:29092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT_INTERNAL://kafka:9092,PLAINTEXT_HOST://localhost:29092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT_INTERNAL:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT_INTERNAL
+      
+      # Дополнительные настройки
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+
+  # Microservices
+  users-service:
+    build: ./users-service
+    ports:
+      - "8001:8001"
+    environment:
+      - DATABASE_URL=postgres://admin:password@postgres:5432/users_db
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+    depends_on:
+      - postgres
+      - kafka
+
+volumes:
+  postgres_data:
