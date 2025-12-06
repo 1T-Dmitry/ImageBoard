@@ -7,6 +7,7 @@ from .serializers import PostSerializer, PostCreateSerializer, PostUpdateSeriali
 
 class PostListView(generics.ListAPIView):
     """Просмотр списка опубликованных постов"""
+
     serializer_class = PostSerializer
     permission_classes = [permissions.AllowAny]
 
@@ -16,6 +17,7 @@ class PostListView(generics.ListAPIView):
 
 class PostCreateView(generics.CreateAPIView):
     """Создание нового поста"""
+
     serializer_class = PostCreateSerializer
     permission_classes = [permissions.IsAuthenticated]
 
@@ -25,6 +27,7 @@ class PostCreateView(generics.CreateAPIView):
 
 class PostDetailView(generics.RetrieveAPIView):
     """Просмотр деталей поста"""
+
     serializer_class = PostSerializer
     permission_classes = [permissions.AllowAny]
 
@@ -48,15 +51,15 @@ class PostDetailView(generics.RetrieveAPIView):
 
 class PostUpdateView(generics.UpdateAPIView):
     """Редактирование поста"""
+
     serializer_class = PostUpdateSerializer
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        # Пользователь может редактировать только свои посты
         user_id = self.request.user.get('user_id')
         return Post.objects.filter(
             author_id=user_id,
-            status__in=['draft', 'published']  # Только черновики и опубликованные
+            status__in=['draft', 'published']
         )
 
     def update(self, request, *args, **kwargs):
@@ -80,6 +83,7 @@ class PostUpdateView(generics.UpdateAPIView):
 @permission_classes([permissions.IsAuthenticated])
 def publish_post(request, pk):
     """Опубликовать пост"""
+
     try:
         post = Post.objects.get(pk=pk, author_id=request.user.get('user_id'))
     except Post.DoesNotExist:

@@ -46,9 +46,8 @@ class PostCreateSerializer(PostSerializer):
         fields = ['title', 'content', 'image_url']
 
     def create(self, validated_data):
-        # Добавляем author_id из запроса
         request = self.context.get('request')
-        validated_data['author_id'] = request.user.get('id')
+        validated_data['author_id'] = request.user.get('user_id')
         return Post.objects.create(**validated_data)
 
 
@@ -62,13 +61,11 @@ class PostUpdateSerializer(serializers.ModelSerializer):
     def validate(self, attrs):
         instance = self.instance
 
-        # Проверяем, можно ли редактировать пост
         if not instance.is_editable():
             raise serializers.ValidationError("Этот пост нельзя редактировать")
 
-        # Проверяем, что пользователь - автор поста
         request = self.context.get('request')
-        if instance.author_id != request.user.get('id'):
+        if instance.author_id != request.user.get('user_id'):
             raise serializers.ValidationError("Вы не можете редактировать чужой пост")
 
         return attrs

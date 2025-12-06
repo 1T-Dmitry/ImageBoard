@@ -28,6 +28,7 @@ class Post(models.Model):
 
     def publish(self):
         """Опубликовать пост"""
+
         if self.status == 'draft':
             self.status = 'published'
             self.save(update_fields=['status', 'updated_at'])
@@ -36,6 +37,7 @@ class Post(models.Model):
 
     def close(self):
         """Закрыть пост"""
+
         if self.status == 'published':
             self.status = 'closed'
             self.save(update_fields=['status', 'updated_at'])
@@ -44,9 +46,11 @@ class Post(models.Model):
 
     def soft_delete(self):
         """Мягкое удаление"""
+
         self.status = 'deleted'
         self.save(update_fields=['status', 'updated_at'])
 
     def is_editable(self):
         """Можно ли редактировать пост"""
+
         return self.status in ['draft', 'published']
