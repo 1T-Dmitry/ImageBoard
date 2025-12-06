@@ -60,6 +60,7 @@ def profile(request):
 
 
 @api_view(['GET'])
+@permission_classes([permissions.IsAuthenticated])
 def user_by_id(request, user_id):
     try:
         user = User.objects.get(id=user_id)

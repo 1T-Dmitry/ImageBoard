@@ -8,30 +8,37 @@ app = Flask(__name__)
 
 SERVICES = {
     'users': 'http://users-service:8001',
+    'posts': 'http://posts-service:8002',
 }
 
 JWT_SECRET = os.environ.get('JWT_SECRET', 'your-secret-key')
 
 
-def authenticate_token(f):
+def token_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
         auth_header = request.headers.get('Authorization')
-
+        
         if not auth_header:
             return jsonify({'error': 'Token is missing'}), 401
-
+        
+        # Проверяем формат заголовка
+        parts = auth_header.split(' ')
+        if len(parts) != 2 or parts[0].lower() != 'bearer':
+            return jsonify({'error': 'Invalid authorization header format. Expected: Bearer <token>'}), 401
+        
         try:
-            token = auth_header.split(' ')[1]
+            token = parts[1]  # Безопасное получение токена
             payload = jwt.decode(token, JWT_SECRET, algorithms=['HS256'])
             request.user = payload
         except jwt.ExpiredSignatureError:
             return jsonify({'error': 'Token has expired'}), 401
         except jwt.InvalidTokenError:
             return jsonify({'error': 'Invalid token'}), 401
-
+        except Exception as e:
+            return jsonify({'error': f'Token verification failed: {str(e)}'}), 401
+        
         return f(*args, **kwargs)
-
     return decorated
 
 
@@ -58,7 +65,7 @@ def login():
 
 # Защищённый маршрут
 @app.route('/api/<service>/<path:path>', methods=['GET', 'POST', 'PUT', 'DELETE'])
-@authenticate_token
+@token_required
 def proxy(service, path):
     if service not in SERVICES:
         return jsonify({'error': 'Service not found'}), 404
