@@ -1,7 +1,9 @@
 from django.urls import path
-from ..posts import views
+from posts import views
 
 urlpatterns = [
+    path('health/', views.health, name='health'),
+
     # Просмотр постов
     path('', views.PostListView.as_view(), name='post-list'),
     path('<int:pk>/', views.PostDetailView.as_view(), name='post-detail'),

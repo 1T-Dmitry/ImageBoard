@@ -11,7 +11,7 @@ django.setup()
 
 # Теперь импортируем всё остальное
 from model_bakery import baker
-from posts.models import Post
+from ..models import Post
 from rest_framework.test import APIClient
 
 

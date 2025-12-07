@@ -1,6 +1,8 @@
 from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
+
+from .authentication import HeaderJWTAuthentication
 from .models import Post
 from .serializers import PostSerializer, PostCreateSerializer, PostUpdateSerializer
 
@@ -8,6 +10,7 @@ from .serializers import PostSerializer, PostCreateSerializer, PostUpdateSeriali
 class PostListView(generics.ListAPIView):
     """Просмотр списка опубликованных постов"""
 
+    authentication_classes = [HeaderJWTAuthentication]
     serializer_class = PostSerializer
     permission_classes = [permissions.AllowAny]
 
@@ -18,6 +21,7 @@ class PostListView(generics.ListAPIView):
 class PostCreateView(generics.CreateAPIView):
     """Создание нового поста"""
 
+    authentication_classes = [HeaderJWTAuthentication]
     serializer_class = PostCreateSerializer
     permission_classes = [permissions.IsAuthenticated]
 
@@ -28,6 +32,7 @@ class PostCreateView(generics.CreateAPIView):
 class PostDetailView(generics.RetrieveAPIView):
     """Просмотр деталей поста"""
 
+    authentication_classes = [HeaderJWTAuthentication]
     serializer_class = PostSerializer
     permission_classes = [permissions.AllowAny]
 
@@ -52,6 +57,7 @@ class PostDetailView(generics.RetrieveAPIView):
 class PostUpdateView(generics.UpdateAPIView):
     """Редактирование поста"""
 
+    authentication_classes = [HeaderJWTAuthentication]
     serializer_class = PostUpdateSerializer
     permission_classes = [permissions.IsAuthenticated]
 
@@ -65,7 +71,6 @@ class PostUpdateView(generics.UpdateAPIView):
     def update(self, request, *args, **kwargs):
         instance = self.get_object()
 
-        # Проверяем, можно ли редактировать
         if not instance.is_editable():
             return Response(
                 {'error': 'Этот пост нельзя редактировать'},
@@ -105,6 +110,7 @@ def publish_post(request, pk):
 @permission_classes([permissions.IsAuthenticated])
 def close_post(request, pk):
     """Закрыть пост"""
+
     try:
         post = Post.objects.get(pk=pk, author_id=request.user.get('user_id'))
     except Post.DoesNotExist:
@@ -126,6 +132,7 @@ def close_post(request, pk):
 @permission_classes([permissions.IsAuthenticated])
 def delete_post(request, pk):
     """Удалить пост (мягкое удаление)"""
+
     try:
         post = Post.objects.get(pk=pk, author_id=request.user.get('user_id'))
     except Post.DoesNotExist:
@@ -142,6 +149,7 @@ def delete_post(request, pk):
 @permission_classes([permissions.IsAuthenticated])
 def my_posts(request):
     """Мои посты (все статусы)"""
+
     user_id = request.user.get('user_id')
     posts = Post.objects.filter(author_id=user_id).order_by('-created_at')
     serializer = PostSerializer(posts, many=True)
@@ -152,7 +160,13 @@ def my_posts(request):
 @permission_classes([permissions.IsAuthenticated])
 def my_drafts(request):
     """Мои черновики"""
+
     user_id = request.user.get('user_id')
     posts = Post.objects.filter(author_id=user_id, status='draft').order_by('-created_at')
     serializer = PostSerializer(posts, many=True)
     return Response(serializer.data)
+
+@api_view(['GET'])
+@permission_classes([permissions.AllowAny])
+def health(request):
+    return Response({'status': 'up'}, status=status.HTTP_200_OK)

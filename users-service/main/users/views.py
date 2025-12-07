@@ -71,3 +71,8 @@ def user_by_id(request, user_id):
             {'error': 'Пользователь не найден'},
             status=status.HTTP_404_NOT_FOUND
         )
+
+@api_view(['GET'])
+@permission_classes([permissions.AllowAny])
+def health(request):
+    return Response({'status': 'up'}, status=status.HTTP_200_OK)

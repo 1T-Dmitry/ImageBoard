@@ -11,7 +11,7 @@ SERVICES = {
     'posts': 'http://posts-service:8002',
 }
 
-JWT_SECRET = os.environ.get('JWT_SECRET', 'your-secret-key')
+JWT_SECRET = os.environ.get('JWT_SECRET', 'django-insecure-0(1bdu-nzf+%5xp960pac28f^a1^fez)mmxfj54_#lfe7v8ct4')
 
 
 def token_required(f):
@@ -75,7 +75,7 @@ def proxy(service, path):
         return jsonify({'error': 'Unauthorized'}), 401
 
     # Forward request to appropriate service
-    url = f"{SERVICES[service]}/api/{path}"
+    url = f"{SERVICES[service]}/{path}"
 
     # Forward headers
     headers = {key: value for key, value in request.headers if key != 'Host'}
