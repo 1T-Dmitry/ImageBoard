@@ -1,7 +1,6 @@
 from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
-
 from .authentication import HeaderJWTAuthentication
 from .models import Post
 from .serializers import PostSerializer, PostCreateSerializer, PostUpdateSerializer
@@ -42,10 +41,10 @@ class PostDetailView(generics.RetrieveAPIView):
         request = self.request
         queryset = Post.objects.all()
 
-        if not request.user or not request.user.get('user_id'):
+        if not request.user or not hasattr(request.user, 'user_id'):
             return queryset.filter(status='published')
 
-        user_id = request.user.get('user_id')
+        user_id = request.user.user_id
         return queryset.filter(
             status='published'
         ) | queryset.filter(
@@ -62,7 +61,7 @@ class PostUpdateView(generics.UpdateAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        user_id = self.request.user.get('user_id')
+        user_id = self.request.user.user_id
         return Post.objects.filter(
             author_id=user_id,
             status__in=['draft', 'published']
@@ -90,7 +89,8 @@ def publish_post(request, pk):
     """Опубликовать пост"""
 
     try:
-        post = Post.objects.get(pk=pk, author_id=request.user.get('user_id'))
+        author_id = request.user.user_id
+        post = Post.objects.get(pk=pk, author_id=author_id)
     except Post.DoesNotExist:
         return Response(
             {'error': 'Пост не найден или у вас нет прав'},
@@ -112,7 +112,8 @@ def close_post(request, pk):
     """Закрыть пост"""
 
     try:
-        post = Post.objects.get(pk=pk, author_id=request.user.get('user_id'))
+        author_id = request.user.user_id
+        post = Post.objects.get(pk=pk, author_id=author_id)
     except Post.DoesNotExist:
         return Response(
             {'error': 'Пост не найден или у вас нет прав'},
@@ -134,7 +135,8 @@ def delete_post(request, pk):
     """Удалить пост (мягкое удаление)"""
 
     try:
-        post = Post.objects.get(pk=pk, author_id=request.user.get('user_id'))
+        author_id = request.user.user_id
+        post = Post.objects.get(pk=pk, author_id=author_id)
     except Post.DoesNotExist:
         return Response(
             {'error': 'Пост не найден или у вас нет прав'},
@@ -150,7 +152,7 @@ def delete_post(request, pk):
 def my_posts(request):
     """Мои посты (все статусы)"""
 
-    user_id = request.user.get('user_id')
+    user_id = request.user.user_id
     posts = Post.objects.filter(author_id=user_id).order_by('-created_at')
     serializer = PostSerializer(posts, many=True)
     return Response(serializer.data)
@@ -161,10 +163,11 @@ def my_posts(request):
 def my_drafts(request):
     """Мои черновики"""
 
-    user_id = request.user.get('user_id')
+    user_id = request.user.user_id
     posts = Post.objects.filter(author_id=user_id, status='draft').order_by('-created_at')
     serializer = PostSerializer(posts, many=True)
     return Response(serializer.data)
+
 
 @api_view(['GET'])
 @permission_classes([permissions.AllowAny])

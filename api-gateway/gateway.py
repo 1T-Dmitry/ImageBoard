@@ -70,9 +70,12 @@ def proxy(service, path):
     if service not in SERVICES:
         return jsonify({'error': 'Service not found'}), 404
 
-    # Исключаем auth из проверки токена
     if service == 'auth':
         return jsonify({'error': 'Unauthorized'}), 401
+
+    # Добавляем завершающий слэш, если его нет
+    if not path.endswith('/'):
+        path = path + '/'
 
     # Forward request to appropriate service
     url = f"{SERVICES[service]}/{path}"
@@ -96,7 +99,6 @@ def proxy(service, path):
         return response.content, response.status_code, response.headers.items()
     except requests.RequestException as e:
         return jsonify({'error': str(e)}), 500
-
 
 @app.route('/health', methods=['GET'])
 def health():

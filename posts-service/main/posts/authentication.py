@@ -16,10 +16,13 @@ class HeaderJWTAuthentication(authentication.BaseAuthentication):
                     self.id = user_id
                     self.user_id = user_id
                     self.is_authenticated = True
-                    # Добавлять другие необходимые объекты пользователя (при необходимости)
+                    # Добавляем другие необходимые атрибуты
+                    self.pk = user_id
                     self.username = request.headers.get('X-User-Username', '')
                     self.email = request.headers.get('X-User-Email', '')
-                    self.pk = user_id
+                    self.is_active = True
+                    self.is_staff = False
+                    self.is_superuser = False
 
             user = SimpleUser(int(user_id))
             return user, None
