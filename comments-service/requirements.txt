@@ -1,8 +1,5 @@
-<<<<<<< HEAD
 Django~=6.0
 requests~=2.32.5
 psycopg2~=2.9.11
 djangorestframework~=3.16.1
-=======
 Django~=6.0
->>>>>>> e1705bb9ca8c492a29b46cabbe185210cce436cb
