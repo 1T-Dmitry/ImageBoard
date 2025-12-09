@@ -59,6 +59,13 @@ DATABASES = {
     }
 }
 
+<<<<<<< HEAD
+=======
+
+# Password validation
+# https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators
+
+>>>>>>> e1705bb9ca8c492a29b46cabbe185210cce436cb
 AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
@@ -74,6 +81,13 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+<<<<<<< HEAD
+=======
+
+# Internationalization
+# https://docs.djangoproject.com/en/6.0/topics/i18n/
+
+>>>>>>> e1705bb9ca8c492a29b46cabbe185210cce436cb
 LANGUAGE_CODE = 'en-us'
 
 TIME_ZONE = 'UTC'
@@ -82,7 +96,15 @@ USE_I18N = True
 
 USE_TZ = True
 
+<<<<<<< HEAD
 STATIC_URL = 'static/'
 
 USERS_SERVICE_URL = 'http://users-service:8001'
 POSTS_SERVICE_URL = 'http://posts-service:8002'
+=======
+
+# Static files (CSS, JavaScript, Images)
+# https://docs.djangoproject.com/en/6.0/howto/static-files/
+
+STATIC_URL = 'static/'
+>>>>>>> e1705bb9ca8c492a29b46cabbe185210cce436cb
