@@ -9,6 +9,7 @@ app = Flask(__name__)
 SERVICES = {
     'users': 'http://users-service:8001',
     'posts': 'http://posts-service:8002',
+    'commnets': 'http://posts-service:8003',
 }
 
 JWT_SECRET = os.environ.get('JWT_SECRET', 'django-insecure-0(1bdu-nzf+%5xp960pac28f^a1^fez)mmxfj54_#lfe7v8ct4')
